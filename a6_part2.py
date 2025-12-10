@@ -26,7 +26,7 @@ def load_and_explore_data(filename):
     # TODO: Load the CSV file using pandas
     data = pd.read_csv(filename)
     # TODO: Print the first 5 rows
-    print("=== Car Price Data ===")
+    print("=== House Price Data ===")
     print(f"\nFirst 5 rows:")
     print(data.head())
     # TODO: Print the shape of the dataset
@@ -82,16 +82,16 @@ def visualize_features(data):
     #       - scatter plot, color='orange', alpha=0.6
     #       - labels and title
     #       - grid
-    axes[1, 0].scatter(data['Age'], data['Price'], color='orange', alpha=0.6)
-    axes[1, 0].set_xlabel('Age (amount)')
-    axes[1, 0].set_ylabel('Price ($)')
-    axes[1, 0].set_title('Age vs Price')
-    axes[1, 0].grid(True, alpha=0.3)
+    axes[1, 1].scatter(data['Age'], data['Price'], color='orange', alpha=0.6)
+    axes[1, 1].set_xlabel('Age (amount)')
+    axes[1, 1].set_ylabel('Price ($)')
+    axes[1, 1].set_title('Age vs Price')
+    axes[1, 1].grid(True, alpha=0.3)
     # TODO: Use plt.tight_layout() to make plots fit nicely
     plt.tight_layout()
     # TODO: Save the figure as 'feature_plots.png' with dpi=300
-    plt.savefig('car_features.png', dpi=300, bbox_inches='tight')
-    print("\n✓ Feature plots saved as 'car_features.png'")
+    plt.savefig('house_features.png', dpi=300, bbox_inches='tight')
+    print("\n✓ Feature plots saved as 'house_features.png'")
     # TODO: Show the plot
     plt.show()
     
@@ -110,9 +110,9 @@ def prepare_features(data):
     """
     # TODO: Create a list of feature column names
     #       ['SquareFeet', 'Bedrooms', 'Bathrooms', 'Age']
-    feature_columns = ['SquareFeet', 'Bedrooms', 'Age']
+    feature_columns = ['SquareFeet', 'Bedrooms', 'Bathrooms', 'Age']
     # TODO: Create X by selecting those columns from data
-    x = data[feature_columns]
+    X = data[feature_columns]
     # TODO: Create y by selecting the 'Price' column
     y = data['Price']
     # TODO: Print the shape of X and y
@@ -122,7 +122,7 @@ def prepare_features(data):
     # TODO: Print the feature column names
     print(f"\nFeature columns: {list(X.columns)}")
     # TODO: Return X and y
-    return x, y
+    return X, y
 
 
 def split_data(X, y):
@@ -137,14 +137,11 @@ def split_data(X, y):
         X_train, X_test, y_train, y_test
     """
     # TODO: Split into train (80%) and test (20%) with random_state=42
-    X_train = X.iloc[:15]  # First 15 rows
-    X_test = X.iloc[15:]   # Remaining rows (should be 3)
-    y_train = y.iloc[:15]
-    y_test = y.iloc[15:]
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
     # TODO: Print how many samples are in training and testing sets
     print(f"\n=== Data Split (Matching Unplugged Activity) ===")
-    print(f"Training set: {len(X_train)} samples (first 15 cars)")
-    print(f"Testing set: {len(X_test)} samples (last 3 cars - your holdout set!)")
+    print(f"Training set: {len(X_train)} samples")
+    print(f"Testing set: {len(X_test)} samples")
     print(f"\nNOTE: We're NOT scaling features here so coefficients are easy to interpret!")
     # TODO: Return X_train, X_test, y_train, y_test
     return X_train, X_test, y_train, y_test
@@ -272,17 +269,17 @@ def make_prediction(model, sqft, bedrooms, bathrooms, age):
     """
     # TODO: Create a DataFrame with the house features
     #       columns should be: ['SquareFeet', 'Bedrooms', 'Bathrooms', 'Age']
-    house_features = pd.DataFrame([[bedrooms, age, bathrooms]], 
-                                 columns=['Bedrooms', 'Age', 'Bathrooms'])
+    house_features = pd.DataFrame([[sqft, bedrooms, bathrooms, age]], 
+                                 columns=['Square Feet', 'bedrooms', 'Bathrooms', 'Age'])
     # TODO: Make a prediction using model.predict()
     predicted_price = model.predict(house_features)[0]
     # TODO: Print the house specs and predicted price nicely formatted
     print(f"\n=== New Prediction ===")
-    print(f"Car specs: {bedrooms:.0f} amount, {age} years old, {bathrooms}")
+    print(f"House specs: {sqft:.0f} feet, {bedrooms} bedrooms, {age} years old, {bathrooms} bathrooms, ")
     print(f"Predicted price: ${predicted_price:,.2f}")
     # TODO: Return the predicted price
     return predicted_price
-    MAY BE SOMETHING WRONG
+    
 
 if __name__ == "__main__":
     print("=" * 70)
@@ -291,28 +288,28 @@ if __name__ == "__main__":
     
     # Step 1: Load and explore
     # TODO: Call load_and_explore_data() with 'house_prices.csv'
-    
+    data = load_and_explore_data('house_prices.csv')
     # Step 2: Visualize features
     # TODO: Call visualize_features() with the data
-    
+    visualize_features(data)
     # Step 3: Prepare features
     # TODO: Call prepare_features() and store X and y
-    
+    X, y = prepare_features(data)
     # Step 4: Split data
     # TODO: Call split_data() and store X_train, X_test, y_train, y_test
-    
+    X_train, X_test, y_train, y_test = split_data(X, y)
     # Step 5: Train model
     # TODO: Call train_model() with training data and feature names (X.columns)
-    
+    model = train_model(X_train, y_train, X.columns)
     # Step 6: Evaluate model
     # TODO: Call evaluate_model() with model, test data, and feature names
-    
+    predictions = evaluate_model(model, X_test, y_test, X.columns)
     # Step 7: Compare predictions
     # TODO: Call compare_predictions() showing first 10 examples
-    
+    compare_predictions(y_test, predictions)
     # Step 8: Make a new prediction
     # TODO: Call make_prediction() for a house of your choice
-    
+    make_prediction(model, 2000, 3, 3, 7)
     print("\n" + "=" * 70)
     print("✓ Assignment complete! Check your saved plots.")
     print("Don't forget to complete a6_part2_writeup.md!")
